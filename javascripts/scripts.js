@@ -22,15 +22,6 @@ function Deck() { // Deck constructor function
   }
 }
 
-// Temporary function to list all of the cards within my deck
-// Makes life easier in the midst of developing
-Deck.prototype.listCards = function listCards() {
-  for (var i=0; i<this.cardsArray.length; i++) {
-    console.log(this.cardsArray[i]);
-  }
-  console.log("The deck currently has", this.cardsArray.length, "cards");
-};
-
 // Shuffle function
 Deck.prototype.shuffle = function shuffle() {
   var shuffleIdx = this.cardsArray.length;
@@ -48,7 +39,7 @@ Deck.prototype.shuffle = function shuffle() {
     this.cardsArray[shuffleIdx] = this.cardsArray[swapIdx]; // Sets the value of the last unshuffled card to a random card preceeding it in index number
     this.cardsArray[swapIdx] = temp; // Sets the card with the preceeding index to the value of the temp variable
   }
-  console.log('The cards have been shuffled\nWe\'re ready to play');
+  updateConsole('The cards have been shuffled\nWe\'re ready to play');
 }
 
 // Cards are dealt out to the player and the dealer
@@ -62,7 +53,7 @@ Deck.prototype.dealCards = function dealCards() {
     this.hit(theDealer);
     theDealer.generateHand(false);
   }
-  console.log("Cards have been dealt");
+  updateConsole("Cards have been dealt!");
   thePlayer.evaluateCards();
   theDealer.evaluateCards();
 }
@@ -91,11 +82,11 @@ function Player( name ) {
 Player.prototype.placeBet = function placeBet(bet) {
   var bet = parseInt(bet);
   if (bet > this.balance) {
-    console.log("You don't have enough");
+    updateConsole("You don't have enough");
   } else {
     this.balance -= bet;
     this.currentBet += bet;
-    console.log("Your current bet is: " + this.currentBet);
+    updateBankConsole();
   }
 }
 
@@ -120,6 +111,11 @@ Player.prototype.evaluateCards = function evaluateCards() {
   // checks the player's cardValue to see if they busted or not
   this.checkBust();
   this.checkBlackjack();
+
+  if (thePlayer.blackjack === true && theDealer.blackjack === false) {
+    console.log('blackjack achieved in evaluateCards()');
+    switchMenu(3);
+  }
 }
 
 // evaluates cards into values
@@ -161,22 +157,18 @@ Player.prototype.stay = function stay() {
     while (theDealer.cardValue < 17 && theDealer.cardValue !== 0) {
       blackjackDeck.hit(theDealer);
       theDealer.evaluateCards();
-      theDealer.generateHand(true);
-      console.log('Dealer while loop finished')
     }
   }
+  theDealer.generateHand(true);
   compareWin();
 }
 
 // Evaluates the players' hand for busting
 Player.prototype.checkBust = function checkBust() {
   if (this.cardValue > 21) {
-    console.log(this.name + " has busted!"); // change these to alerts
+    updateConsole(this.name + " have busted!"); // change these to alerts
     this.cardValue = 0;
     this.bust = true;
-    alert(this.name + " has busted!");
-  } else {
-    console.log(this.name + " has not busted! Keep playing playa");
   }
 }
 
@@ -192,13 +184,20 @@ Player.prototype.nextRound = function nextRound() {
   this.cardValue = 0;
   this.hand = [];
   this.blackjack = false;
+  var player;
+  if (this.name !== "The Dealer") {
+    player = "player";
+  } else {
+    player = "dealer";
+  }
+  this.removeCardImages(player);
 }
 
 // generates the images for the player's cards into their hand
 Player.prototype.generateHand = function generateHand(endGame) {
 
   var player;
-  if (this.name !== "Dealer") {
+  if (this.name !== "The Dealer") {
     player = "player";
   } else {
     player = "dealer";
@@ -206,9 +205,12 @@ Player.prototype.generateHand = function generateHand(endGame) {
 
   this.removeCardImages(player);
 
-  if (player !== "dealer" || endGame === true) {
+  if (player !== "The Dealer" || endGame === true) {
     // call image for first card in hand
     this.callCardImage(this.hand, 0, player)
+    if (thePlayer.blackjack === true) {
+      updateConsole("You have blackjack!");
+    }
   } else {
     // call image for the back of a card
     var backNode = $('<img>').attr('src', 'images/classic-cards/b1fv.png');
@@ -272,29 +274,25 @@ Player.prototype.removeCardImages = function removeCardImages(player) {
 
 // Compares both the player and the dealer to determines who won the round
 function compareWin() {
-  console.log(thePlayer.name + ": " + thePlayer.cardValue);
-  console.log(theDealer.name + ": " + theDealer.cardValue);
-
-
 
   if ((thePlayer.blackjack === true && theDealer.blackjack === true) || (thePlayer.cardValue === theDealer.cardValue)) {
     // Tie scenario
     // push. Player receives his bet back
     thePlayer.balance += thePlayer.currentBet;
     thePlayer.currentBet = 0;
-    console.log("You tied with the dealer!\nYou received your money back")
+    updateConsole("You tied with the dealer!\nYou received your money back")
   } else if ((thePlayer.blackjack === true) || (thePlayer.cardValue > theDealer.cardValue)) {
     // Player wins
     thePlayer.balance += 2*thePlayer.currentBet;
-    console.log("You won $" + 2*thePlayer.currentBet)
+    updateConsole("You won $" + 2*thePlayer.currentBet);
     thePlayer.currentBet = 0;
   } else {
     // Dealer wins
     thePlayer.currentBet = 0;
-    console.log("You lost...")
+    updateConsole("You lost...");
   }
-  $('.inGame').hide();
-  $('.postGame').show();
+  updateBankConsole();
+  switchMenu(3);
 }
 
 // Binds events to each button
@@ -311,9 +309,15 @@ function bindButtons() {
   // Binds the dealCards function
   // Hides the preGame buttons while revealing the inGame buttons
   $('#deal').on('click', function() {
-    blackjackDeck.dealCards();
-    $('.inGame').show();
-    $('.preGame').hide();
+    if (thePlayer.balance === 0 && thePlayer.currentBet === 0) {
+      updateConsole('Go find yo broke ass an ATM...');
+    } else if (thePlayer.currentBet === 0) {
+      updateConsole("You have to bet something to play...")
+    } else {
+      blackjackDeck.dealCards();
+      switchMenu(2);
+    }
+
   });
 
   // Checks if the player can or cannot hit
@@ -321,12 +325,12 @@ function bindButtons() {
   // If not, the player has some message that is displayed
   $('#hit').on('click', function() {
     if (thePlayer.blackjack) {
-      alert("You have blackjack!")
+      updateConsole("Don't hit! You have blackjack!")
     } else if (!thePlayer.bust) {
       blackjackDeck.hit(thePlayer);
       thePlayer.evaluateCards();
     } else {
-      alert("You've busted, and cannot hit anymore...")
+      updateConsole("You've busted, and cannot hit anymore...")
     }
 
   })
@@ -343,28 +347,66 @@ function bindButtons() {
     thePlayer.nextRound();
     theDealer.nextRound();
     blackjackDeck = new Deck();
-    $('.postGame').hide();
-    $('.preGame').show();
+    blackjackDeck.shuffle();
+    switchMenu(1);
   })
 
   $('#leave').on('click', function() {
-    alert("You've left the table with $" + thePlayer.bank);
+    if (atTable) {
+      updateConsole("You've left the table with $" + thePlayer.balance + "! Congratulations!");
+      $('#playAgain').hide();
+    } else {
+      updateConsole("Give someone else a try!");
+    }
   })
 
 }
 
+// creates the Bank Console Text
+function createBankConsole() {
+  $('.bank-console').append($('<div>').attr('class', 'balance').text("Balance: $" + thePlayer.balance));
+  $('.bank-console').append($('<div>').attr('class', 'currentBet').text("Current Bet: $" + thePlayer.currentBet));
+}
+
+function updateBankConsole() {
+  $('.balance').text("Balance: $" + thePlayer.balance);
+  $('.currentBet').text("Current Bet: $" + thePlayer.currentBet);
+}
+
+function switchMenu(mode) {
+  switch(mode) {
+    case 1: // Pre-Game state
+      $('.postGame').hide();
+      $('.preGame').show();
+      break;
+    case 2: // In Game state
+      $('.preGame').hide();
+      $('.inGame').show();
+      break;
+    case 3: // Post-Game state
+      $('.inGame').hide();
+      $('.postGame').show();
+      break;
+  }
+}
+
+function updateConsole(message) {
+  $('.text').text(message);
+}
 
 // -----------------------------------------------------------------------------
 
 
 // Initializing game and declaring variables
 var blackjackDeck = new Deck();
-var thePlayer = new Player("Jon");
-var theDealer = new Player("Dealer");
+var thePlayer = new Player("You");
+var theDealer = new Player("The Dealer");
+var atTable = true;
 
 $(document).ready(function() {
+  switchMenu(1);
   $('.inGame').hide();
-  $('.postGame').hide();
+  createBankConsole();
   bindButtons();
   blackjackDeck.shuffle();
 

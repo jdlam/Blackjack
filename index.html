@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8">
     <title>Blackjack</title>
-    <link rel="stylesheet" href="http://meyerweb.com/eric/tools/css/reset/reset.css">
     <link rel="stylesheet" href="css/styles.css">
+    <link href='http://fonts.googleapis.com/css?family=Gloria+Hallelujah|Playball' rel='stylesheet' type='text/css'>
     <script type="text/javascript" src="javascripts/jquery.js"></script>
     <script type="text/javascript" src="javascripts/scripts.js"></script>
   </head>
@@ -12,24 +12,20 @@
     <div class="table">
       <img class='beautiful' src="images/blackjackTable.png" alt=""></img>
 
-      <div class="dealer atTable">
-      </div>
-      <div class="player atTable">
+      <div class="dealer atTable"></div>
+      <div class="player atTable"></div>
+
+      <div class="console">
+        <div class="text">
+        </div>
       </div>
 
       <div class="bank-console">
-        <div class="current balance">
-        </div>
-        <div class="current bet">
-        </div>
-      </div>
-
-      <div class="winLose">
       </div>
 
       <div class="buttons">
 
-        <div class="preGame">
+        <div class="preGame bet">
           <button type="button" id="one" value="1">$1</button>
           <button type="button" id="five" value="5">$5</button>
           <button type="button" id="ten" value="10">$10</button>
@@ -37,7 +33,7 @@
           <button type="button" id="fifty" value="50">$50</button>
           <button type="button" id="hundred" value="100">$100</button>
         </div>
-        <div class="preGame">
+        <div class="preGame deal">
           <button type="button" id="deal">Deal Cards</button>
         </div>
         <div class="inGame">
