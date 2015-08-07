@@ -4,7 +4,7 @@ function Deck() { // Deck constructor function
   // The number/face value and the suit value
   var face = ['A', 'K', 'Q', 'J'];
   var numbers = [2, 3, 4, 5, 6, 7, 8, 9, 10];
-  var suits = ['&spades', '&clubs', '&hearts', '&diams'];
+  var suits = ['Club', 'Spade', 'Heart', 'Diamond'];
 
   this.cardsArray = [];
   // Creating all of the face cards
@@ -31,7 +31,6 @@ Deck.prototype.listCards = function listCards() {
   console.log("The deck currently has", this.cardsArray.length, "cards");
 };
 
-
 // Shuffle function
 Deck.prototype.shuffle = function shuffle() {
   var shuffleIdx = this.cardsArray.length;
@@ -52,7 +51,6 @@ Deck.prototype.shuffle = function shuffle() {
   console.log('The cards have been shuffled\nWe\'re ready to play');
 }
 
-
 // Cards are dealt out to the player and the dealer
 Deck.prototype.dealCards = function dealCards() {
 
@@ -60,25 +58,29 @@ Deck.prototype.dealCards = function dealCards() {
   // player first, then dealer.
   for (var i=0; i<2; i++) {
     this.hit(thePlayer);
+    thePlayer.generateHand(false);
     this.hit(theDealer);
+    theDealer.generateHand(false);
   }
   console.log("Cards have been dealt");
   thePlayer.evaluateCards();
   theDealer.evaluateCards();
 }
 
+// Hit function that gives a specified player a card
 Deck.prototype.hit = function hit(player) {
   player.hand.push(this.cardsArray.shift());
 }
 
+
 // -----------------------------------------------------------------------------
 
-// Player Constructor Function
 
+// Player Constructor Function
 function Player( name ) {
   this.name = name;
   this.hand = [];
-  this.bank = 100;
+  this.balance = 500;
   this.cardValue;
   this.blackjack = false;
   this.currentBet = 0;
@@ -88,20 +90,20 @@ function Player( name ) {
 // Player places bet at the beginning of the game
 Player.prototype.placeBet = function placeBet(bet) {
   var bet = parseInt(bet);
-  if (bet > this.bank) {
+  if (bet > this.balance) {
     console.log("You don't have enough");
   } else {
-    this.bank -= bet;
+    this.balance -= bet;
     this.currentBet += bet;
     console.log("Your current bet is: " + this.currentBet);
   }
 }
 
 // Function to evaluate the player's hand
-
 Player.prototype.evaluateCards = function evaluateCards() {
 
   // creating my local variable singleValue and setting cardValue back to 0
+  this.generateHand(false);
   var singleValue = [];
   this.cardValue = 0;
 
@@ -120,7 +122,8 @@ Player.prototype.evaluateCards = function evaluateCards() {
   this.checkBlackjack();
 }
 
-Player.prototype.faceValue = function faceValue(face) {// converts cards into values
+// evaluates cards into values
+Player.prototype.faceValue = function faceValue(face) {
   if (face === "A") {
     return 11;
   } else if (face === "K" || face === "Q" || face === "J") {
@@ -130,6 +133,8 @@ Player.prototype.faceValue = function faceValue(face) {// converts cards into va
   }
 }
 
+// checks cards for aces, and converts their value from 11 to 1
+// only used if the player has already busted with Aces set to 11
 Player.prototype.checkAces = function checkAces(singleValue) {
   if (this.cardValue > 21) {
     // If there are aces, then it re-evaluates the cardValue
@@ -146,15 +151,19 @@ Player.prototype.checkAces = function checkAces(singleValue) {
   }
 }
 
+// The player decides to stay
 Player.prototype.stay = function stay() {
   // Only thePlayer will be using the stay function
   // Therefore, the dealer's entire turn is within this function
 
-  theDealer.evaluateCards();
-  while (theDealer.cardValue < 17 && theDealer.cardValue !== 0) {
-    blackjackDeck.hit(theDealer);
+  if (this.cardValue > 0) {
     theDealer.evaluateCards();
-    console.log('Dealer while loop finished')
+    while (theDealer.cardValue < 17 && theDealer.cardValue !== 0) {
+      blackjackDeck.hit(theDealer);
+      theDealer.evaluateCards();
+      theDealer.generateHand(true);
+      console.log('Dealer while loop finished')
+    }
   }
   compareWin();
 }
@@ -171,32 +180,112 @@ Player.prototype.checkBust = function checkBust() {
   }
 }
 
+// Evaluates for blackjack status
 Player.prototype.checkBlackjack = function checkBlackjack() {
   if (this.cardValue === 21 && this.hand.length === 2) {
     this.blackjack = true;
   }
 }
 
+// resets the player's values and hand for the next round
+Player.prototype.nextRound = function nextRound() {
+  this.cardValue = 0;
+  this.hand = [];
+  this.blackjack = false;
+}
+
+// generates the images for the player's cards into their hand
+Player.prototype.generateHand = function generateHand(endGame) {
+
+  var player;
+  if (this.name !== "Dealer") {
+    player = "player";
+  } else {
+    player = "dealer";
+  }
+
+  this.removeCardImages(player);
+
+  if (player !== "dealer" || endGame === true) {
+    // call image for first card in hand
+    this.callCardImage(this.hand, 0, player)
+  } else {
+    // call image for the back of a card
+    var backNode = $('<img>').attr('src', 'images/classic-cards/b1fv.png');
+    backNode.attr('class', 'dealerCard card');
+    backNode.css({left: '0vw'});
+    $('.' + player).append(backNode);
+  }
+
+  for (i=1; i<this.hand.length; i++) {
+    this.callCardImage(this.hand, i, player)
+  }
+}
+
+// calls upon the image by generating a node with a specified path and appending it
+Player.prototype.callCardImage = function callCardImage(image, counter, player) {
+  var card = image[counter].split(' ');
+  var cardCode = 0;
+  // generates the value for the card code
+  // It's stored such that A has the lowest number, and 2 has the highest
+  // Then it's ordered by suit. Clubs, Spades, Hearts, and finally Diamonds
+  // Therefore, the highest card code is the 2 of Diamonds, which is 52.png
+  switch (card[0]) {
+    case '2': cardCode += 4;
+    case '3': cardCode += 4;
+    case '4': cardCode += 4;
+    case '5': cardCode += 4;
+    case '6': cardCode += 4;
+    case '7': cardCode += 4;
+    case '8': cardCode += 4;
+    case '9': cardCode += 4;
+    case '10': cardCode += 4;
+    case 'J': cardCode += 4;
+    case 'Q': cardCode += 4;
+    case 'K': cardCode += 4;
+    case 'A': cardCode += 1;
+      break;
+  }
+  switch (card[1]) {
+    case 'Diamond': cardCode += 1;
+    case 'Heart': cardCode += 1;
+    case 'Spade': cardCode += 1;
+    case 'Club': break;
+  }
+  var imageNode = $('<img>').attr('src', 'images/classic-cards/' + cardCode + '.png');
+  imageNode.attr('class', player + 'Card card');
+  imageNode.css({left: counter*4 + 'vw'})
+  $('.' + player).append(imageNode);
+  // append to whatever div or something idk
+}
+
+// removes the card images for a specified players
+Player.prototype.removeCardImages = function removeCardImages(player) {
+  $('img.' + player + 'Card').remove();
+}
+
+
 // -----------------------------------------------------------------------------
+
 
 // Functions outside of the constructors/objects
 
+// Compares both the player and the dealer to determines who won the round
 function compareWin() {
-  // Checks win conditions between the player and the dealer
   console.log(thePlayer.name + ": " + thePlayer.cardValue);
   console.log(theDealer.name + ": " + theDealer.cardValue);
 
 
 
   if ((thePlayer.blackjack === true && theDealer.blackjack === true) || (thePlayer.cardValue === theDealer.cardValue)) {
-    // Tie
+    // Tie scenario
     // push. Player receives his bet back
-    thePlayer.bank += thePlayer.currentBet;
+    thePlayer.balance += thePlayer.currentBet;
     thePlayer.currentBet = 0;
     console.log("You tied with the dealer!\nYou received your money back")
   } else if ((thePlayer.blackjack === true) || (thePlayer.cardValue > theDealer.cardValue)) {
     // Player wins
-    thePlayer.bank += 2*thePlayer.currentBet;
+    thePlayer.balance += 2*thePlayer.currentBet;
     console.log("You won $" + 2*thePlayer.currentBet)
     thePlayer.currentBet = 0;
   } else {
@@ -208,22 +297,32 @@ function compareWin() {
   $('.postGame').show();
 }
 
+// Binds events to each button
 function bindButtons() {
-  var buttonId = ['#one', '#five', '#ten', '#twenty', '#fifty'];
+
+  // Binds the value of the bet to each respective button
+  var buttonId = ['#one', '#five', '#ten', '#twenty', '#fifty', '#hundred'];
   buttonId.map(function(button) {
     $(button).on('click', function() {
       thePlayer.placeBet(this.value);
     })
   })
 
+  // Binds the dealCards function
+  // Hides the preGame buttons while revealing the inGame buttons
   $('#deal').on('click', function() {
     blackjackDeck.dealCards();
     $('.inGame').show();
     $('.preGame').hide();
   });
 
+  // Checks if the player can or cannot hit
+  // If he can hit, the player hits
+  // If not, the player has some message that is displayed
   $('#hit').on('click', function() {
-    if (!thePlayer.bust) {
+    if (thePlayer.blackjack) {
+      alert("You have blackjack!")
+    } else if (!thePlayer.bust) {
       blackjackDeck.hit(thePlayer);
       thePlayer.evaluateCards();
     } else {
@@ -232,36 +331,37 @@ function bindButtons() {
 
   })
 
+  // Binds the stay function to the stay button
   $('#stay').on('click', function() {
     thePlayer.stay();
   })
 
+  // Resets all values for both the player and the dealer except their current bank balance
+  // Creates a new deck
+  // Hides preGame buttons while revealing postGame buttons
   $('#playAgain').on('click', function() {
-    var playersArray = [thePlayer, theDealer];
-    for (var i=0; i<playersArray.length; i++) {
-      playersArray[i].cardValue = 0;
-      playersArray[i].hand = [];
-      playersArray[i].blackjack = false;
-    }
+    thePlayer.nextRound();
+    theDealer.nextRound();
     blackjackDeck = new Deck();
     $('.postGame').hide();
     $('.preGame').show();
   })
 
   $('#leave').on('click', function() {
-
+    alert("You've left the table with $" + thePlayer.bank);
   })
 
 }
 
 
-
-  var blackjackDeck = new Deck();
-  var thePlayer = new Player("Jon");
-  var theDealer = new Player("Dealer");
+// -----------------------------------------------------------------------------
 
 
-// Runs all of the necessary functions to set up the game
+// Initializing game and declaring variables
+var blackjackDeck = new Deck();
+var thePlayer = new Player("Jon");
+var theDealer = new Player("Dealer");
+
 $(document).ready(function() {
   $('.inGame').hide();
   $('.postGame').hide();

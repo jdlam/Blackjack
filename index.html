@@ -3,33 +3,50 @@
   <head>
     <meta charset="utf-8">
     <title>Blackjack</title>
+    <link rel="stylesheet" href="http://meyerweb.com/eric/tools/css/reset/reset.css">
     <link rel="stylesheet" href="css/styles.css">
     <script type="text/javascript" src="javascripts/jquery.js"></script>
     <script type="text/javascript" src="javascripts/scripts.js"></script>
   </head>
   <body>
-    <h1>Blackjack!!!</h1>
-
     <div class="table">
       <img class='beautiful' src="images/blackjackTable.png" alt=""></img>
+
+      <div class="dealer atTable">
+      </div>
+      <div class="player atTable">
+      </div>
+
+      <div class="bank-console">
+        <div class="current balance">
+        </div>
+        <div class="current bet">
+        </div>
+      </div>
+
+      <div class="winLose">
+      </div>
+
       <div class="buttons">
+
         <div class="preGame">
-          <button type="button" name="one" id="one" value="1">$1</button>
-          <button type="button" name="five" id="five" value="5">$5</button>
-          <button type="button" name="ten" id="ten" value="10">$10</button>
-          <button type="button" name="twenty" id="twenty" value="20">$20</button>
-          <button type="button" name="fifty" id="fifty" value="50">$50</button>
-
-          <button type="button" name="deal" id="deal">Deal Cards</button>
-
+          <button type="button" id="one" value="1">$1</button>
+          <button type="button" id="five" value="5">$5</button>
+          <button type="button" id="ten" value="10">$10</button>
+          <button type="button" id="twenty" value="20">$20</button>
+          <button type="button" id="fifty" value="50">$50</button>
+          <button type="button" id="hundred" value="100">$100</button>
+        </div>
+        <div class="preGame">
+          <button type="button" id="deal">Deal Cards</button>
         </div>
         <div class="inGame">
-          <button type="button" name="hit" id="hit">Hit</button>
-          <button type="button" name="stay" id="stay">Stay</button>
+          <button type="button" id="hit">Hit</button>
+          <button type="button" id="stay">Stay</button>
         </div>
         <div class="postGame">
-          <button type="button" name="playAgain" id="playAgain">Play Again</button>
-          <button type="button" name="leave" id="leave">Leave Table</button>
+          <button type="button" id="playAgain">Play Again</button>
+          <button type="button" id="leave">Leave Table</button>
         </div>
       </div>
     </div>

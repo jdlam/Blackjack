@@ -9,35 +9,57 @@ h1 {
 }
 
 .table {
+  position: absolute;
   width: 100%;
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
   margin-left: auto;
   margin-right: auto;
-  /*background-color: green;*/
-  position: relative;
+  top: 0;
+  left: 0;
 }
 
-div.buttons {
-  vertical-align: bottom;
+div.atTable {
   position: absolute;
+  border: 1px dotted black;
+  width: 25vw;
+  height: 15vw;
+  margin-left: 50%;
+  margin-right: 50%;
+  text-align: center;
+  left: -12.5vw;
+}
+
+div.dealer {
+  top: 4vw;
+}
+
+div.player {
+  top: 59%;
+}
+
+div.atTable img {
+  position: absolute;
+  height: 90%;
+}
+
+
+div.buttons  {
+  position: absolute;
+  font-size: 2vw;
   display: inline-block;
   float: right;
-  font-size: 0.75em;
-  bottom: 10px;
-  right: 10px;
+  bottom: 1vw;
+  right: 1vw;
+}
+
+buttons {
+  font-size: 30px;
+  color: #FFFFFF;
+  align-items: flex-end;
 }
 
 img.beautiful{
   width: 100%;
-}
-
-
-@media (min-width: 900px) {
-
-}
-
-@media (max-width: 900px) {
-
 }
