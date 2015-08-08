@@ -260,7 +260,7 @@ Player.prototype.callCardImage = function callCardImage(image, counter, player) 
   }
   var imageNode = $('<img>').attr('src', 'images/classic-cards/' + cardCode + '.png');
   imageNode.attr('class', player + 'Card card');
-  imageNode.css({left: counter*3 + 'vw'})
+  imageNode.css({left: counter*12 + '%'})
   $('.' + player).append(imageNode);
   // append to whatever div or something idk
 }
@@ -352,6 +352,7 @@ function bindButtons() {
     if (atTable) {
       updateConsole("You've left the table with $" + thePlayer.balance + "! Congratulations!");
       $('#playAgain').hide();
+      $('#leave').hide();
     } else {
       updateConsole("Give someone else a try!");
     }

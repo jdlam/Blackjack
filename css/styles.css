@@ -98,3 +98,56 @@ div.buttons {
   right: 1vw;
   float: right;
 }
+
+@media (min-width: 1000px) {
+  .table {
+    width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+    align-self: center;
+  }
+
+  div.atTable {
+    width: 250px;
+    height: 150px;
+    left: -95px;
+  }
+
+  div.dealer {
+    top: 40px;
+  }
+
+  div.player {
+    top: 571.71;
+  }
+
+
+  div.bank-console {
+    width: 250px;
+    height: 60px;
+    font-size: 25px;
+    padding: 15px;
+  }
+
+  div.console {
+    width: 350px;
+    height: 80px;
+  }
+
+  div.text {
+    font-size: 25px;
+    margin: 15px;
+  }
+
+  div.buttons {
+    bottom: 10px;
+  }
+
+  .bet{
+    right: 10px;
+  }
+
+  .deal, .inGame, .postGame{
+    right: 10px;
+  }
+}
