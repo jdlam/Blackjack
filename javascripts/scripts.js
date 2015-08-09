@@ -1,3 +1,5 @@
+// Deck and its related methods
+
 function Deck() { // Deck constructor function
 
   // Defining each component of a card
@@ -66,6 +68,7 @@ Deck.prototype.hit = function hit(player) {
 
 // -----------------------------------------------------------------------------
 
+// Player and its related functions
 
 // Player Constructor Function
 function Player( name ) {
@@ -104,11 +107,13 @@ Player.prototype.evaluateCards = function evaluateCards() {
     this.cardValue += singleValue[i]; // each value is added to this.cardValue
   }
 
-  // if busted, then double checking for any Aces
+  // Double checking for any Aces and the need to adjust the Ace's value
   this.checkAces(singleValue);
 
-  // checks the player's cardValue to see if they busted or not
+  // Checks the player's cardValue to see if they busted or not
   this.checkBust();
+
+  // Checks if the player has blackjack
   this.checkBlackjack();
 
   if (thePlayer.blackjack === true && theDealer.blackjack === false) {
@@ -153,6 +158,7 @@ Player.prototype.stay = function stay() {
 
   if (this.cardValue > 0) {
     theDealer.evaluateCards();
+    // While the dealer's hand is below 17 and hasn't busted
     while (theDealer.cardValue < 17 && theDealer.cardValue !== 0) {
       blackjackDeck.hit(theDealer);
       theDealer.evaluateCards();
@@ -165,9 +171,15 @@ Player.prototype.stay = function stay() {
 // Evaluates the players' hand for busting
 Player.prototype.checkBust = function checkBust() {
   if (this.cardValue > 21) {
-    updateConsole(this.name + " have busted!"); // change these to alerts
+
+    // If the player has busted, then the console is updated
+    // The player's cardValue is set to 0 and bust value set to true
+    updateConsole(this.name + " have busted!");
     this.cardValue = 0;
     this.bust = true;
+
+    // If the player is not the dealer, then the current round ends here
+    // The menu is switched and the bank console is updated
     if (this.name !== "The Dealer") {
       switchMenu(3);
       compareWin();
@@ -188,6 +200,7 @@ Player.prototype.nextRound = function nextRound() {
   this.cardValue = 0;
   this.hand = [];
   this.blackjack = false;
+  this.bust = false;
   var player;
   if (this.name !== "The Dealer") {
     player = "player";
@@ -200,6 +213,7 @@ Player.prototype.nextRound = function nextRound() {
 // generates the images for the player's cards into their hand
 Player.prototype.generateHand = function generateHand(endGame) {
 
+  // Determines whose hand is being generated
   var player;
   if (this.name !== "The Dealer") {
     player = "player";
@@ -207,22 +221,27 @@ Player.prototype.generateHand = function generateHand(endGame) {
     player = "dealer";
   }
 
+  // Removes the previous card images, in order to refresh them properly
   this.removeCardImages(player);
 
+  // Call image for the first card in hand
   if (player !== "dealer" || endGame === true) {
-    // call image for first card in hand
+    // Call image for first card in hand of the player
     this.callCardImage(this.hand, 0, player)
+    // If the player has blackjack, the console is updated
     if (thePlayer.blackjack === true) {
       updateConsole("You have blackjack!");
     }
   } else {
-    // call image for the back of a card
+    // Call image for the back of a card
+    // Only happens when it is the first card of the Dealer's hand
     var backNode = $('<img>').attr('src', 'images/classic-cards/b1fv.png');
     backNode.attr('class', 'dealerCard card');
     backNode.css({left: '0vw'});
     $('.' + player).append(backNode);
   }
 
+  // For every other card other than the first, the card is generated
   for (i=1; i<this.hand.length; i++) {
     this.callCardImage(this.hand, i, player)
   }
@@ -258,11 +277,12 @@ Player.prototype.callCardImage = function callCardImage(image, counter, player) 
     case 'Spade': cardCode += 1;
     case 'Club': break;
   }
+  // Creates an image node with the appropriate css attributes to position it to the right of any previous cards
   var imageNode = $('<img>').attr('src', 'images/classic-cards/' + cardCode + '.png');
   imageNode.attr('class', player + 'Card card');
   imageNode.css({left: counter*12 + '%'})
   $('.' + player).append(imageNode);
-  // append to whatever div or something idk
+  // append to the player's specific div
 }
 
 // removes the card images for a specified players
@@ -348,6 +368,8 @@ function bindButtons() {
     switchMenu(1);
   })
 
+  // Leave button makes you get up from the table and walk away
+  // Hides the menu buttons so you cannot play again
   $('#leave').on('click', function() {
     if (atTable) {
       updateConsole("You've left the table with $" + thePlayer.balance + "! Congratulations!");
@@ -360,17 +382,19 @@ function bindButtons() {
 
 }
 
-// creates the Bank Console Text
+// Creates the Bank Console Text
 function createBankConsole() {
   $('.bank-console').append($('<div>').attr('class', 'balance').text("Balance: $" + thePlayer.balance));
   $('.bank-console').append($('<div>').attr('class', 'currentBet').text("Current Bet: $" + thePlayer.currentBet));
 }
 
+// Updates the Bank Console Text
 function updateBankConsole() {
   $('.balance').text("Balance: $" + thePlayer.balance);
   $('.currentBet').text("Current Bet: $" + thePlayer.currentBet);
 }
 
+// Switches the menu to whatever mode is necessary
 function switchMenu(mode) {
   switch(mode) {
     case 1: // Pre-Game state
@@ -388,10 +412,12 @@ function switchMenu(mode) {
   }
 }
 
+// updates the console text
 function updateConsole(message) {
   $('.text').text(message);
 }
 
+// Loading and playing the audio file for blackjack scenarios
 function loadAudio() {
   $('.audio').trigger('load');
   $('.audio').hide();
@@ -411,6 +437,7 @@ var theDealer = new Player("The Dealer");
 var atTable = true;
 
 
+// Running the necessary functions and methods to start the game
 $(document).ready(function() {
   switchMenu(1);
   $('.inGame').hide();
@@ -418,6 +445,4 @@ $(document).ready(function() {
   bindButtons();
   blackjackDeck.shuffle();
   loadAudio();
-
-
 })
